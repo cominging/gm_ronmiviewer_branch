@@ -1,4 +1,3 @@
-
 var RonmiViewer = 
 {
 	'evaluateXPath': function(aNode, aExpr)
@@ -148,54 +147,100 @@ var RonmiViewer =
 	'curFetch': 1, // 預讀到第幾張
 	'infoLayer': null,
 	'curimgLayer': null,
+	
 	'hotkeyEnabled': false,
-	'hotCharCode': -1,
-	'hotKeyCode': -1,
-	'hotAlt': false,
-	'hotCtrl': false,
-	'hotShift': false,
-	'hotMeta': false,
+	
+	// 下一張圖片的 hotkey
+	'nextHotCharCode': -1,
+	'nextHotKeyCode': -1,
+	'nextHotAlt': false,
+	'nextHotCtrl': false,
+	'nextHotShift': false,
+	'nextHotMeta': false,
+	
+	// 上一張圖片的 hotkey
+	'prevHotCharCode': -1,
+	'prevHotKeyCode': -1,
+	'prevHotAlt': false,
+	'prevHotCtrl': false,
+	'prevHotShift': false,
+	'prevHotMeta': false,
+	
 	'keyLayer': null,
-	'setKeyEvent': function(e)
+	'prevKeyLayer': null,
+	'nextKeyLayer': null,
+	
+	'toggleNextHotkey': function(e)
+	{
+		RonmiViewer.nextKeyLayer.innerHTML = 'Hotkey \'next\' capturing.';
+		window.addEventListener('keypress', RonmiViewer.setNextHotKeyEvent, false);
+		window.removeEventListener('keypress', RonmiViewer.toggleNextHotkey, false);
+	},
+	'togglePrevHotkey': function(e)
+	{
+		RonmiViewer.prevKeyLayer.innerHTML = 'Hotkey \'prev\' capturing.';
+		window.addEventListener('keypress', RonmiViewer.setPrevHotKeyEvent, false);
+		window.removeEventListener('keypress', RonmiViewer.togglePrevHotkey, false);
+	},
+	'setNextHotKeyEvent': function(e)
 	{
 		e.preventDefault();
-		RonmiViewer.hotCharCode = e.charCode;
-		RonmiViewer.hotKeyCode = e.keyCode;
-		RonmiViewer.hotAlt = e.altKey;
-		RonmiViewer.hotCtrl = e.ctrlKey;
-		RonmiViewer.hotShift = e.shiftKey;
-		RonmiViewer.hotMeta = e.metaKey;
-		window.removeEventListener('keypress', RonmiViewer.setKeyEvent, false);
-		window.addEventListener('keypress', RonmiViewer.keyEventHandler, false);
-		RonmiViewer.hotkeyEnabled = true;
-		RonmiViewer.keyLayer.innerHTML = 'Hotkey enabled.';
+		RonmiViewer.nextHotCharCode = e.charCode;
+		RonmiViewer.nextHotKeyCode = e.keyCode;
+		RonmiViewer.nextHotAlt = e.altKey;
+		RonmiViewer.nextHotCtrl = e.ctrlKey;
+		RonmiViewer.nextHotShift = e.shiftKey;
+		RonmiViewer.nextHotMeta = e.metaKey;
+		window.removeEventListener('keypress', RonmiViewer.setNextHotKeyEvent, false);
+		RonmiViewer.nextKeyLayer.innerHTML = 'Hotkey \'next\' enabled.';
+	},
+	'setPrevHotKeyEvent': function(e)
+	{
+		e.preventDefault();
+		RonmiViewer.prevHotCharCode = e.charCode;
+		RonmiViewer.prevHotKeyCode = e.keyCode;
+		RonmiViewer.prevHotAlt = e.altKey;
+		RonmiViewer.prevHotCtrl = e.ctrlKey;
+		RonmiViewer.prevHotShift = e.shiftKey;
+		RonmiViewer.prevHotMeta = e.metaKey;
+		window.removeEventListener('keypress', RonmiViewer.setPrevHotKeyEvent, false);
+		RonmiViewer.prevKeyLayer.innerHTML = 'Hotkey \'prev\' enabled.';
 	},
 	'keyEventHandler': function(e)
 	{
 		e.preventDefault();
-		if (RonmiViewer.hotCharCode == e.charCode &&
-		RonmiViewer.hotKeyCode == e.keyCode &&
-		RonmiViewer.hotAlt == e.altKey &&
-		RonmiViewer.hotCtrl == e.ctrlKey &&
-		RonmiViewer.hotShift == e.shiftKey &&
-		RonmiViewer.hotMeta == e.metaKey) 
+		if (RonmiViewer.nextHotCharCode == e.charCode &&
+		  RonmiViewer.nextHotKeyCode == e.keyCode &&
+		  RonmiViewer.nextHotAlt == e.altKey &&
+		  RonmiViewer.nextHotCtrl == e.ctrlKey &&
+		  RonmiViewer.nextHotShift == e.shiftKey &&
+		  RonmiViewer.nextHotMeta == e.metaKey) 
 		{
 			RonmiViewer.next();
 		}
+		else if (RonmiViewer.prevHotCharCode == e.charCode &&
+		  RonmiViewer.prevHotKeyCode == e.keyCode &&
+		  RonmiViewer.prevHotAlt == e.altKey &&
+		  RonmiViewer.prevHotCtrl == e.ctrlKey &&
+		  RonmiViewer.prevHotShift == e.shiftKey &&
+		  RonmiViewer.prevHotMeta == e.metaKey) 
+		{
+			RonmiViewer.prev();
+		}
 	},
-	'toggleKey': function()
+	'toggleHotkey': function()
 	{
 		if (RonmiViewer.hotkeyEnabled == true) 
 		{
 			RonmiViewer.hotkeyEnabled = false;
-			window.removeEventListener('keypress', RonmiViewer.setKeyEvent, false);
 			window.removeEventListener('keypress', RonmiViewer.keyEventHandler, false);
 			RonmiViewer.keyLayer.innerHTML = 'Hotkey disabled.';
 		}
 		else 
 		{
-			window.addEventListener('keypress', RonmiViewer.setKeyEvent, false);
-			RonmiViewer.keyLayer.innerHTML = 'Hotkey capturing.';
+			RonmiViewer.hotkeyEnabled = true;
+			window.addEventListener('keypress', RonmiViewer.keyEventHandler, false);
+			RonmiViewer.keyLayer.innerHTML = 'Hotkey enabled.';
 		}
 	},
 	'debugLayerEventHandler': function(e)
@@ -241,7 +286,8 @@ var RonmiViewer =
 		document.body.innerHTML = '<table width="100%"><tr><td><div id="picLayer"></div></td></tr></table>' +
 		'<div id="controlPanel" style="position:absolute;background-color:white;border:1px solid red;display:none;z-index:1000;padding:5px;">' +
 		'<span id="prevlink" onmouseover="this.style.cursor=\'pointer\';" onmouseout="this.style.cursor=\'\';" style="color:red;">Previous Pic</span> | <span id="showlink" onmouseover="this.style.cursor=\'pointer\';" onmouseout="this.style.cursor=\'\';" style="color:red;">Show</span> | <span id="nextlink" onmouseover="this.style.cursor=\'pointer\';" onmouseout="this.style.cursor=\'\';" style="color:red;">Next Pic</span><br />' +
-		'<span id="key" onmouseover="this.style.cursor=\'pointer\';" onmouseout="this.style.cursor=\'\';">Hotkey disabled.</span> | <span id="info"></span> | <span id="dataLayer">Prefetch ' +
+		'<span id="key" onmouseover="this.style.cursor=\'pointer\';" onmouseout="this.style.cursor=\'\';">Hotkey disabled.</span> | <span id="nextKey" onmouseover="this.style.cursor=\'pointer\';" onmouseout="this.style.cursor=\'\';">Hotkey \'next\' disabled.</span> | <span id="prevKey" onmouseover="this.style.cursor=\'pointer\';" onmouseout="this.style.cursor=\'\';">Hotkey \'prev\' disabled.</span><br />' +
+		'<span id="info"></span> | <span id="dataLayer">Prefetch ' +
 		String(RonmiViewer.prefetchCount) +
 		' pix</span><br />' +
 		'<span id="ifr">Progress </span><br />' +
@@ -259,10 +305,22 @@ var RonmiViewer =
 		RonmiViewer.infoLayer = document.getElementById('info');
 		RonmiViewer.curimgLayer = document.getElementById('curimg');
 		RonmiViewer.keyLayer = document.getElementById('key');
+		RonmiViewer.nextKeyLayer = document.getElementById('nextKey');
+		RonmiViewer.prevKeyLayer = document.getElementById('prevKey');
 		RonmiViewer.keyLayer.addEventListener('click', function(e)
 		{
 			e.preventDefault();
-			RonmiViewer.toggleKey();
+			RonmiViewer.toggleHotkey();
+		}, false);
+		RonmiViewer.nextKeyLayer.addEventListener('click', function(e)
+		{
+			e.preventDefault();
+			RonmiViewer.toggleNextHotkey();
+		}, false);
+		RonmiViewer.prevKeyLayer.addEventListener('click', function(e)
+		{
+			e.preventDefault();
+			RonmiViewer.togglePrevHotkey();
 		}, false);
 		RonmiViewer.debugLayer = document.getElementById('debug');
 		RonmiViewer.controlPanel = document.getElementById('controlPanel');
